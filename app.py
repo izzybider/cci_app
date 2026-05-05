@@ -188,7 +188,7 @@ risk_score = compute_risk_score(behavior, frequency, context)
 risk_label = score_to_label(risk_score)
 
 st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
-st.write(f"**Risk level:** {risk_label}")
+st.write(f"**Concern level:** {risk_label}")
 st.caption(
     "This risk level reflects historical associations in puppy-report analyses, not causal or clinical determination."
 )
@@ -207,8 +207,3 @@ with st.expander("Why this result was selected"):
     st.write("- Risk score combines base behavior weight, persistence, behavior-group effects, and context relevance.")
     st.write("- Matching row is chosen from the CSV using behavior + context overlap + frequency fit.")
 
-with st.expander("Debug: show matched rows"):
-    st.dataframe(matches, use_container_width=True)
-
-with st.expander("Debug: show full data"):
-    st.dataframe(df, use_container_width=True)
