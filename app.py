@@ -343,7 +343,7 @@ feedback = st.text_area(
     placeholder="Example: I want more specific steps for barking during puppy class...",
 )
 
-if st.button("Save feedback"):
+if st.button("Save feedback") and tester_id:
     if useful == "select one" or trust == "select one":
         st.warning("Please answer the usefulness and trust questions before saving feedback.")
     else:
@@ -370,6 +370,8 @@ if st.button("Save feedback"):
         feedback_df.to_csv(FEEDBACK_FILE, index=False)
 
         st.success("Feedback saved. Use this to guide the next iteration.")
+
+        st.caption("Thank you — this feedback helps improve the system.")
 
 
 st.subheader("Admin only")
