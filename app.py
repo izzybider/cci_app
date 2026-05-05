@@ -205,7 +205,7 @@ tester_id = st.text_input(
 )
 
 if not tester_id:
-    st.warning("Please enter your name or dog name to use tracking features.")
+    st.info("Enter your name or dog name to enable tracking and trends.")
 
 # -----------------------------
 # Results
@@ -273,6 +273,8 @@ if st.button("Log this observation") and tester_id:
     log_df.to_csv(LOG_FILE, index=False)
 
     st.success("Observation saved. You are now tracking behavior over time.")
+
+    st.caption("You can log multiple observations to see trends over time.")
 
 if st.checkbox("Show my behavior trends over time"):
 
@@ -357,7 +359,7 @@ if st.button("Save feedback"):
             "feedback_useful": useful,
             "feedback_trust": trust,
             "feedback_text": feedback,
-}
+        }
 
         try:
             feedback_df = pd.read_csv(FEEDBACK_FILE)
@@ -368,8 +370,6 @@ if st.button("Save feedback"):
         feedback_df.to_csv(FEEDBACK_FILE, index=False)
 
         st.success("Feedback saved. Use this to guide the next iteration.")
-
-        st.subheader("Review collected feedback")
 
 
 st.subheader("Admin only")
