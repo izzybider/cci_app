@@ -235,35 +235,47 @@ st.caption(
 st.write(f"**Why it matters:** {best.get('why_it_matters', 'N/A')}")
 st.write(f"**Immediate next step:** {best.get('immediate_action', 'N/A')}")
 st.write(f"**Longer-term support:** {best.get('long_term_support', 'N/A')}")
-st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
-st.write(f"**Confidence note:** {confidence_text(behavior, frequency, context)}")
-st.write(f"**Internal concern score:** {risk_score:.2f}")
+#st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
+st.write("**When to get extra help:**")
+st.write(best.get("escalate_when", "N/A"))
+#st.write(f"**Confidence note:** {confidence_text(behavior, frequency, context)}")
+#st.write(f"**Internal concern score:** {risk_score:.2f}")
+st.caption("Based on behavior type, how often it occurs, and the context provided.")
 
 # -----------------------------
 # Step-by-step guidance (NEW)
 # -----------------------------
 
-show_steps = st.checkbox("Show step-by-step guidance")
+# -----------------------------
+# Step-by-step guidance (ALWAYS SHOW)
+# -----------------------------
 
-if show_steps:
-    st.write("**Step-by-step guidance:**")
+st.write("**Step-by-step guidance:**")
 
-    if behavior == "barking":
-        st.write("1. Increase distance from the trigger (move further away)")
-        st.write("2. Wait for a moment of calm (no barking)")
-        st.write("3. Immediately reward calm behavior")
-        st.write("4. Keep sessions short and controlled")
+if behavior == "barking":
+    st.write("1. Increase distance from the trigger (move further away)")
+    st.write("2. Wait for a moment of calm (no barking)")
+    st.write("3. Immediately reward calm behavior")
+    st.write("4. Keep sessions short and controlled")
 
-    elif behavior == "fear and anxiety":
-        st.write("1. Reduce exposure to the stressful environment")
-        st.write("2. Allow the dog to observe from a safe distance")
-        st.write("3. Reward calm, non-reactive behavior")
-        st.write("4. Gradually increase exposure over time")
+elif behavior == "fear and anxiety":
+    st.write("1. Reduce exposure to the stressful environment")
+    st.write("2. Allow the dog to observe from a safe distance")
+    st.write("3. Reward calm, non-reactive behavior")
+    st.write("4. Gradually increase exposure over time")
 
-    else:
-        st.write("1. Simplify the situation")
-        st.write("2. Reinforce the desired behavior")
-        st.write("3. Gradually reintroduce difficulty")
+else:
+    st.write("1. Simplify the situation")
+    st.write("2. Reinforce the desired behavior")
+    st.write("3. Gradually reintroduce difficulty")
+
+st.write("**Helpful resource to add later:**")
+if behavior == "barking":
+    st.write("A short video showing how to increase distance, reward calm check-ins, and re-enter the environment gradually would be useful here.")
+elif behavior == "fear and anxiety":
+    st.write("A short video showing gradual exposure/desensitization would be useful here.")
+else:
+    st.write("A short demo video showing the recommended training steps would be useful here.")
 
 with st.expander("Why this result was selected"):
     st.write(f"- Selected behavior: `{behavior}`")
