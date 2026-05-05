@@ -3,18 +3,19 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="GuideAI V2", page_icon="🐕")
+
 st.title("GuideAI")
 st.write("Prototype assistant for early service-dog behavior support.")
+st.caption(
+    "Prototype only — not official training advice. Designed to help raisers translate behavior patterns into structured next steps."
+)
+
+LOG_FILE = "behavior_log.csv"
+FEEDBACK_FILE = "user_feedback.csv"
 
 # -----------------------------
 # Data-informed scoring rules
 # -----------------------------
-# These are based on your notes from the Erica analysis:
-# - positive demeanor, plays well with dogs, nail trim behavior, reaction to stairs
-#   were positively correlated with graduation
-# - excitable greetings, impulsivity, fear/anxiety, and vocalizations were negatively correlated
-# - poor eye contact, poor responsivity, and inappropriate play with other dogs
-#   were associated with persistence/clustering of undesirable behaviors
 
 BASE_BEHAVIOR_WEIGHTS = {
     "fear and anxiety": 4.0,
@@ -60,18 +61,19 @@ PROTECTIVE_GROUP = {
 }
 
 CONTEXT_KEYWORDS = {
-    "barking": ["crowded", "public", "stranger", "separation", "noise"],
+    "barking": ["crowded", "public", "stranger", "separation", "noise", "class", "training"],
     "growling": ["unfamiliar", "person", "handling", "dog", "pressure"],
     "fear and anxiety": ["new", "environment", "sound", "noise", "crowd"],
     "poor eye contact": ["training", "class", "session", "focus"],
     "poor responsivity": ["training", "home", "cue", "session"],
-    "avoidance": ["novel", "person", "object", "environment"],
-    "positive demeanor": ["general", "daily", "routine"],
+    "avoidance": ["novel", "new", "person", "object", "environment", "public", "crowded"],
+    "positive demeanor": ["general", "daily", "routine", "home"],
 }
 
 # -----------------------------
 # Load CSV
 # -----------------------------
+
 @st.cache_data
 def load_data():
     try:
@@ -97,6 +99,7 @@ required_cols = [
     "long_term_support",
     "escalate_when",
 ]
+
 missing = [c for c in required_cols if c not in df.columns]
 if missing:
     st.error(f"Missing required CSV columns: {missing}")
@@ -105,35 +108,36 @@ if missing:
 # -----------------------------
 # Helper functions
 # -----------------------------
+
 def context_bonus(behavior: str, user_context: str) -> float:
     if not user_context:
         return 0.0
+
     user_words = set(user_context.lower().split())
     expected = set(CONTEXT_KEYWORDS.get(behavior, []))
     overlap = len(user_words & expected)
+
     return min(overlap * 0.5, 1.5)
+
 
 def compute_risk_score(behavior: str, frequency: str, context: str) -> float:
     base = BASE_BEHAVIOR_WEIGHTS.get(behavior, 2.0)
     mult = FREQUENCY_MULTIPLIER.get(frequency, 1.0)
     score = base * mult
 
-    # persistence / clustering signal
     if behavior in CLUSTER_BONUS_GROUP and frequency == "repeated":
         score += 1.0
 
-    # vocalization concerns
     if behavior in VOCALIZATION_GROUP and frequency == "repeated":
         score += 0.75
 
-    # protective behaviors reduce concern
     if behavior in PROTECTIVE_GROUP and frequency == "repeated":
         score -= 0.75
 
-    # context relevance
     score += context_bonus(behavior, context)
 
     return score
+
 
 def score_to_label(score: float) -> str:
     if score >= 5.5:
@@ -142,44 +146,77 @@ def score_to_label(score: float) -> str:
         return "medium"
     return "low"
 
-def confidence_text(behavior: str, frequency: str) -> str:
+
+def confidence_text(behavior: str, frequency: str, context: str) -> str:
+    if frequency == "repeated" and context.strip():
+        return "higher confidence because the behavior is repeated and context was provided"
     if frequency == "repeated":
-        return "higher confidence because the behavior is reported as repeated"
+        return "moderate-to-higher confidence because the behavior is reported as repeated"
     if behavior in PROTECTIVE_GROUP:
-        return "moderate confidence because this behavior is generally protective in the historical findings"
+        return "moderate confidence because this behavior is generally protective in historical findings"
     return "moderate confidence based on behavior category alone"
+
 
 def pick_best_row(matches: pd.DataFrame, user_context: str, user_frequency: str) -> pd.Series:
     def row_score(row):
         score = 0
+
         if isinstance(user_context, str) and isinstance(row.get("context"), str):
             row_words = set(str(row["context"]).lower().split())
             user_words = set(user_context.lower().split())
             score += len(row_words & user_words)
+
         if user_frequency == row.get("frequency"):
             score += 3
         elif user_frequency == "repeated" and row.get("frequency") in ["intermittent", "repeated"]:
             score += 2
         elif user_frequency == "intermittent" and row.get("frequency") in ["once", "intermittent"]:
             score += 1
+
         return score
 
     matches = matches.copy()
     matches["match_score"] = matches.apply(row_score, axis=1)
     return matches.sort_values("match_score", ascending=False).iloc[0]
 
-# -----------------------------
-# UI
-# -----------------------------
-behavior = st.selectbox("Observed behavior", sorted(df["behavior"].dropna().unique()))
-context = st.text_input("Context", placeholder="Example: crowded public space, unfamiliar person, training class")
-frequency = st.selectbox("How often has this happened?", ["once", "intermittent", "repeated"])
 
-st.subheader("Step 1: Data-informed result")
+# -----------------------------
+# UI inputs
+# -----------------------------
+
+behavior = st.selectbox(
+    "Observed behavior",
+    sorted(df["behavior"].dropna().unique()),
+)
+
+context = st.text_input(
+    "Context",
+    placeholder="Example: crowded public space, unfamiliar person, training class",
+)
+
+frequency = st.selectbox(
+    "How often has this happened?",
+    ["once", "intermittent", "repeated"],
+)
+
+tester_id = st.text_input(
+    "Tester name/initials or dog name",
+    placeholder="Example: Izzy / Puppy A / Dog initials"
+)
+
+if not tester_id:
+    st.warning("Please enter your name or dog name to use tracking features.")
+
+# -----------------------------
+# Results
+# -----------------------------
+
+st.subheader("Data-informed result")
 
 matches = df[df["behavior"] == behavior].copy()
+
 if matches.empty:
-    st.error("No rows found for that behavior in guideai_data.csv")
+    st.error("No rows found for that behavior in guideai_data.csv.")
     st.stop()
 
 best = pick_best_row(matches, context, frequency)
@@ -189,21 +226,172 @@ risk_label = score_to_label(risk_score)
 
 st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
 st.write(f"**Concern level:** {risk_label}")
+
 st.caption(
-    "This risk level reflects historical associations in puppy-report analyses, not causal or clinical determination."
+    "This concern level reflects structured behavior rules informed by prior puppy-report analysis and puppy-raiser experience. "
+    "It is not an official training, causal, or clinical determination."
 )
 
 st.write(f"**Why it matters:** {best.get('why_it_matters', 'N/A')}")
 st.write(f"**Immediate next step:** {best.get('immediate_action', 'N/A')}")
 st.write(f"**Longer-term support:** {best.get('long_term_support', 'N/A')}")
 st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
-st.write(f"**Confidence note:** {confidence_text(behavior, frequency)}")
-st.write(f"**Internal risk score:** {risk_score:.2f}")
+st.write(f"**Confidence note:** {confidence_text(behavior, frequency, context)}")
+st.write(f"**Internal concern score:** {risk_score:.2f}")
 
 with st.expander("Why this result was selected"):
     st.write(f"- Selected behavior: `{behavior}`")
     st.write(f"- Selected frequency: `{frequency}`")
     st.write(f"- User context: `{context or 'none provided'}`")
-    st.write("- Risk score combines base behavior weight, persistence, behavior-group effects, and context relevance.")
-    st.write("- Matching row is chosen from the CSV using behavior + context overlap + frequency fit.")
+    st.write("- Concern score combines base behavior weight, persistence, behavior-group effects, and context relevance.")
+    st.write("- The recommendation row is chosen from the CSV using behavior, context overlap, and frequency fit.")
 
+# -----------------------------
+# Log behavior
+# -----------------------------
+
+st.subheader("Track this behavior over time")
+
+if st.button("Log this observation") and tester_id:
+    log_entry = {
+         "timestamp": pd.Timestamp.now(),
+        "tester_id": tester_id,
+        "behavior": behavior,
+        "context": context,
+        "frequency": frequency,
+        "likely_issue": best.get("likely_issue", "N/A"),
+        "concern_level": risk_label,
+        "concern_score": risk_score,
+    }
+
+    try:
+        log_df = pd.read_csv(LOG_FILE)
+    except FileNotFoundError:
+        log_df = pd.DataFrame()
+
+    log_df = pd.concat([log_df, pd.DataFrame([log_entry])], ignore_index=True)
+    log_df.to_csv(LOG_FILE, index=False)
+
+    st.success("Observation saved. You are now tracking behavior over time.")
+
+if st.checkbox("Show my behavior trends over time"):
+
+    # 🚨 require user identity FIRST
+    if not tester_id or not tester_id.strip():
+        st.warning("Enter your name or dog name to view your behavior trends.")
+        st.stop()
+
+    try:
+        log_df = pd.read_csv(LOG_FILE)
+
+        # ✅ filter to THIS user only
+        log_df = log_df[log_df["tester_id"] == tester_id]
+
+        if log_df.empty:
+            st.info("No logged observations yet for this tester/dog.")
+        else:
+            # ensure proper time ordering
+            log_df["timestamp"] = pd.to_datetime(log_df["timestamp"])
+            log_df = log_df.sort_values("timestamp")
+
+            # 📈 trend chart
+            st.line_chart(
+                log_df.set_index("timestamp")["concern_score"]
+            )
+
+            st.caption(f"{len(log_df)} observations logged")
+
+            # 🧠 simple trend insight (nice PM touch)
+            if len(log_df) >= 3:
+                recent = log_df["concern_score"].tail(3).tolist()
+
+                if recent[-1] > recent[0]:
+                    st.warning("Recent observations suggest concern may be trending upward.")
+                elif recent[-1] < recent[0]:
+                    st.success("Recent observations suggest concern may be trending downward.")
+                else:
+                    st.info("Recent concern level appears stable.")
+
+    except FileNotFoundError:
+        st.info("No logged observations yet.")
+
+
+
+
+
+
+# -----------------------------
+# Feedback
+# -----------------------------
+
+st.subheader("Feedback for user testing")
+
+useful = st.selectbox(
+    "Was this output useful?",
+    ["select one", "yes", "somewhat", "no"],
+)
+
+trust = st.selectbox(
+    "Would you trust this as a raiser support tool?",
+    ["select one", "yes", "maybe", "no"],
+)
+
+feedback = st.text_area(
+    "What felt missing, unclear, or too generic?",
+    placeholder="Example: I want more specific steps for barking during puppy class...",
+)
+
+if st.button("Save feedback"):
+    if useful == "select one" or trust == "select one":
+        st.warning("Please answer the usefulness and trust questions before saving feedback.")
+    else:
+        feedback_entry = {
+            "timestamp": pd.Timestamp.now(),
+            "tester_id": tester_id,
+            "behavior": behavior,
+            "context": context,
+            "frequency": frequency,
+            "likely_issue": best.get("likely_issue", "N/A"),
+            "concern_level": risk_label,
+            "concern_score": risk_score,
+            "feedback_useful": useful,
+            "feedback_trust": trust,
+            "feedback_text": feedback,
+}
+
+        try:
+            feedback_df = pd.read_csv(FEEDBACK_FILE)
+        except FileNotFoundError:
+            feedback_df = pd.DataFrame()
+
+        feedback_df = pd.concat([feedback_df, pd.DataFrame([feedback_entry])], ignore_index=True)
+        feedback_df.to_csv(FEEDBACK_FILE, index=False)
+
+        st.success("Feedback saved. Use this to guide the next iteration.")
+
+        st.subheader("Review collected feedback")
+
+
+st.subheader("Admin only")
+
+admin_password = st.text_input("Enter admin password", type="password")
+
+if admin_password == "izzy123":
+    st.success("Access granted")
+
+    st.write("### Saved feedback")
+    try:
+        feedback_df = pd.read_csv(FEEDBACK_FILE)
+        st.dataframe(feedback_df, use_container_width=True)
+    except FileNotFoundError:
+        st.info("No feedback saved yet.")
+
+    st.write("### Behavior logs")
+    try:
+        log_df = pd.read_csv(LOG_FILE)
+        st.dataframe(log_df, use_container_width=True)
+    except FileNotFoundError:
+        st.info("No behavior logs saved yet.")
+
+elif admin_password:
+    st.error("Incorrect password")
