@@ -323,7 +323,7 @@ st.caption(
     "This may be incomplete or incorrect and should not replace trainer guidance."
 )
 
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = st.secrets.get("OPENAI_API_KEY")
 
 if not api_key:
     st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
