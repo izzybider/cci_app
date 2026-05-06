@@ -324,10 +324,7 @@ else:
 st.subheader("Detailed coaching suggestions")
 st.caption(
     "Uses a language model to expand the structured recommendation into more contextual coaching suggestions."
-)
-st.caption(
-    "Optional experimental feature: expands the structured result into more detailed guidance. "
-    "This may be incomplete or incorrect and should not replace trainer guidance."
+        "This may be incomplete or incorrect and should not replace trainer guidance."
 )
 
 api_key = st.secrets.get("OPENAI_API_KEY")
