@@ -286,7 +286,7 @@ st.subheader("AI Coach")
 
 st.caption(
     "Optional: generate more detailed guidance based on the structured result above. "
-    "This does not replace trainer advice."
+    "AI-generated guidance may be incomplete or incorrect and should not replace trainer guidance."
 )
 
 api_key = os.getenv("OPENAI_API_KEY")
