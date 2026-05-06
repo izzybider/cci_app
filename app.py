@@ -11,6 +11,10 @@ st.caption(
     "Prototype only — not official training advice. Designed to help raisers translate behavior patterns into structured next steps."
 )
 
+st.info(
+    "GuideAI is an experimental decision-support prototype designed to help puppy raisers interpret behavior patterns and identify potential next steps."
+)
+
 LOG_FILE = "behavior_log.csv"
 FEEDBACK_FILE = "user_feedback.csv"
 
@@ -228,7 +232,14 @@ with st.container(border=True):
     risk_label = score_to_label(risk_score)
     
     st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
-    st.write(f"**Concern level:** {risk_label}")
+    if risk_label == "low":
+        st.success("Concern level: low")
+    
+    elif risk_label == "medium":
+        st.warning("Concern level: medium")
+    
+    else:
+        st.error("Concern level: high")
     
     st.caption(
         "This concern level reflects structured behavior rules informed by prior puppy-report analysis and puppy-raiser experience. "
@@ -314,15 +325,13 @@ with st.container(border=True):
 # AI Coach
 # -----------------------------
 
-st.divider()
 
 with st.container(border=True):
 
     st.subheader("🧠 Detailed coaching suggestions")
     
     st.caption(
-        "Uses a language model to expand the structured recommendation into more contextual coaching suggestions. "
-        "This may be incomplete or incorrect and should not replace trainer guidance."
+        "Experimental AI-generated coaching expansion. May be incomplete and should not replace trainer guidance."
     )
     
     api_key = st.secrets.get("OPENAI_API_KEY")
@@ -393,11 +402,10 @@ with st.container(border=True):
 # Log behavior
 # -----------------------------
 
-st.divider()
 
 with st.container(border=True):
 
-    st.subheader("📈 Track this behavior over time")
+    st.markdown("## 📈 Track this behavior over time")
 
     if st.button("Log this observation") and tester_id:
         log_entry = {
@@ -473,7 +481,6 @@ with st.container(border=True):
 # Feedback
 # -----------------------------
 
-st.divider()
 
 with st.container(border=True):
 
@@ -525,10 +532,9 @@ with st.container(border=True):
             st.caption("Thank you — this feedback helps improve the system.")
     
     
-st.divider()
 
-with st.container(border=True):
-
+with st.expander("🧠 Expanded coaching suggestions (experimental)"):
+    
     st.subheader("🔒 Internal analytics dashboard")
     st.caption("Hidden in public pilot version")
     
