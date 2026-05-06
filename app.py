@@ -243,36 +243,36 @@ st.write(best.get("escalate_when", "N/A"))
 #st.write(f"**Internal concern score:** {risk_score:.2f}")
 st.caption("Based on behavior type, how often it occurs, and the context provided.")
 
-# -----------------------------
-# Suggested training resource
-# -----------------------------
+# # -----------------------------
+# # Suggested training resource
+# # -----------------------------
 
-st.write("### Suggested training resource")
+# st.write("### Suggested training resource")
 
-if behavior == "barking":
-    st.info(
-        "Future versions of this prototype could surface trainer-approved demonstrations on calm check-ins, distance management, and gradually re-entering distracting environments."
-    )
+# if behavior == "barking":
+#     st.info(
+#         "Future versions of this prototype could surface trainer-approved demonstrations on calm check-ins, distance management, and gradually re-entering distracting environments."
+#     )
 
-elif behavior == "fear and anxiety":
-    st.info(
-        "Future versions of this prototype could surface trainer-approved demonstrations on gradual exposure, confidence-building, and reducing environmental stress."
-    )
+# elif behavior == "fear and anxiety":
+#     st.info(
+#         "Future versions of this prototype could surface trainer-approved demonstrations on gradual exposure, confidence-building, and reducing environmental stress."
+#     )
 
-elif behavior == "poor eye contact":
-    st.info(
-        "Future versions of this prototype could surface trainer-approved demonstrations on engagement exercises, check-ins, and focus-building games."
-    )
+# elif behavior == "poor eye contact":
+#     st.info(
+#         "Future versions of this prototype could surface trainer-approved demonstrations on engagement exercises, check-ins, and focus-building games."
+#     )
 
-elif behavior == "poor responsivity":
-    st.info(
-        "Future versions of this prototype could surface trainer-approved demonstrations on improving cue responsiveness in low-distraction environments."
-    )
+# elif behavior == "poor responsivity":
+#     st.info(
+#         "Future versions of this prototype could surface trainer-approved demonstrations on improving cue responsiveness in low-distraction environments."
+#     )
 
-else:
-    st.info(
-        "Future versions of this prototype could include trainer-approved educational resources and demonstrations relevant to this behavior pattern."
-    )
+# else:
+#     st.info(
+#         "Future versions of this prototype could include trainer-approved educational resources and demonstrations relevant to this behavior pattern."
+#     )
     
 
 # -----------------------------
@@ -305,17 +305,6 @@ else:
 #     st.write("A future version of this prototype could include approved video demonstrations showing gradual exposure/desensitization.")
 # else:
 #     st.write("st.write("A future version of this prototype could include trainer-approved video demonstrations for scenarios like this to provide more visual guidance and reinforcement.")
-# -----------------------------
-# Resource matching
-# -----------------------------
-
-# -----------------------------
-# Resource matching
-# -----------------------------
-
-
-
-
     
 # -----------------------------
 # AI Coach
@@ -323,8 +312,8 @@ else:
 
 st.subheader("Detailed coaching suggestions")
 st.caption(
-    "Uses a language model to expand the structured recommendation into more contextual coaching suggestions."
-        "This may be incomplete or incorrect and should not replace trainer guidance."
+    "Uses a language model to expand the structured recommendation into more contextual coaching suggestions. "
+    "This may be incomplete or incorrect and should not replace trainer guidance."
 )
 
 api_key = st.secrets.get("OPENAI_API_KEY")
@@ -519,7 +508,8 @@ if st.button("Save feedback") and tester_id:
         st.caption("Thank you — this feedback helps improve the system.")
 
 
-st.caption("Internal analytics dashboard hidden in pilot version.")
+st.subheader("Internal analytics dashboard hidden in pilot version.")
+
 
 admin_password = st.text_input("Enter admin password", type="password")
 
