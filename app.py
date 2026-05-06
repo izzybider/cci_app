@@ -285,35 +285,9 @@ else:
 # Resource matching
 # -----------------------------
 
-RESOURCE_MATCHES = {
-    "barking": {
-        "title": "Suggested resource type: calm check-ins around distractions",
-        "description": "A short demo showing how to create distance, reward quiet check-ins, and re-enter a distracting environment gradually would be useful."
-    },
-    "fear and anxiety": {
-        "title": "Suggested resource type: gradual exposure/desensitization",
-        "description": "A short demo showing how to let the dog observe from a safe distance and reward calm behavior without forcing interaction would be useful."
-    },
-    "poor eye contact": {
-        "title": "Suggested resource type: engagement and focus exercises",
-        "description": "A short demo showing name response, check-ins, and short focus games before adding distractions would be useful."
-    },
-    "poor responsivity": {
-        "title": "Suggested resource type: cue responsiveness practice",
-        "description": "A short demo showing how to simplify cues, reduce distractions, and reward quick responses would be useful."
-    },
-    "impulsivity": {
-        "title": "Suggested resource type: calm greetings and impulse control",
-        "description": "A short demo showing how to wait for calm behavior before giving attention or rewards would be useful."
-    },
-}
 
-resource = RESOURCE_MATCHES.get(behavior)
 
-if resource:
-    st.write("**Suggested resource to add later:**")
-    st.write(f"**{resource['title']}**")
-    st.write(resource["description"])
+
     
 # -----------------------------
 # AI Coach
