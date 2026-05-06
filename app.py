@@ -457,7 +457,7 @@ else:
         st.markdown(st.session_state.ai_response)
         
     
-            prompt = f"""
+    prompt = f"""
     You are helping a service-dog puppy raiser interpret a behavior concern.
     
     Important constraints:
