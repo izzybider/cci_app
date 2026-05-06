@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import streamlit as st
+from openai import OpenAI
 
 st.set_page_config(page_title="GuideAI V2", page_icon="🐕")
 
@@ -277,6 +278,80 @@ elif behavior == "fear and anxiety":
 else:
     st.write("A short demo video showing the recommended training steps would be useful here.")
 
+# -----------------------------
+# AI Coach
+# -----------------------------
+
+st.subheader("AI Coach")
+
+st.caption(
+    "Optional: generate more detailed guidance based on the structured result above. "
+    "This does not replace trainer advice."
+)
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.info("AI Coach is not enabled yet because OPENAI_API_KEY is not set.")
+else:
+    if st.button("Generate more detailed guidance"):
+        client = OpenAI(api_key=api_key)
+
+        prompt = f"""
+You are helping a service-dog puppy raiser interpret a behavior concern.
+
+Important constraints:
+- Do not diagnose the dog.
+- Do not claim certainty.
+- Do not replace a trainer.
+- Stay grounded in the structured result below.
+- Give concrete, practical, step-by-step guidance.
+- Use supportive language.
+- If the situation seems serious, recommend contacting a trainer.
+
+User inputs:
+Behavior: {behavior}
+Context: {context}
+Frequency: {frequency}
+
+Structured result:
+Likely issue: {best.get('likely_issue', 'N/A')}
+Concern level: {risk_label}
+Why it matters: {best.get('why_it_matters', 'N/A')}
+Immediate next step: {best.get('immediate_action', 'N/A')}
+Longer-term support: {best.get('long_term_support', 'N/A')}
+When to get help: {best.get('escalate_when', 'N/A')}
+
+Write the answer in this exact format:
+
+### What may be going on
+2-3 sentences.
+
+### What to try next time
+Give 4 numbered steps.
+
+### What not to do
+Give 2 bullets.
+
+### What to watch
+Give 3 bullets.
+
+### Helpful resource to add later
+Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
+"""
+
+        try:
+            with st.spinner("Generating detailed guidance..."):
+                response = client.responses.create(
+                    model="gpt-4.1-mini",
+                    input=prompt,
+                )
+
+            st.markdown(response.output_text)
+
+        except Exception as e:
+            st.error(f"AI Coach failed: {e}")
+            
 with st.expander("Why this result was selected"):
     st.write(f"- Selected behavior: `{behavior}`")
     st.write(f"- Selected frequency: `{frequency}`")
