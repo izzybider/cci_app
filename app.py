@@ -341,7 +341,7 @@ Describe what kind of short demo video or training resource would help for this 
         try:
             with st.spinner("Generating detailed guidance..."):
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                model = genai.GenerativeModel("gemini-2.0-flash")
                 response = model.generate_content(prompt)
 
             st.markdown(response.text)
