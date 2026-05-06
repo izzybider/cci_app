@@ -415,94 +415,91 @@ with st.container(border=True):
 # AI Coach
 # -----------------------------
 
+# -----------------------------
+# AI Coach
+# -----------------------------
 
 with st.container(border=True):
 
     st.subheader("🧠 Expanded coaching suggestions")
-    
+
     st.caption(
         "Experimental AI-generated coaching expansion. May be incomplete and should not replace trainer guidance."
     )
-    
+
     api_key = st.secrets.get("OPENAI_API_KEY")
-    
-if not api_key:
-    st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
 
-else:
+    prompt = f"""
+You are helping a service-dog puppy raiser interpret a behavior concern.
 
-    if "ai_response" not in st.session_state:
-        st.session_state.ai_response = None
+Important constraints:
+- Do not diagnose the dog.
+- Do not claim certainty.
+- Do not replace a trainer.
+- Stay grounded in the structured result below.
+- Give concrete, practical, step-by-step guidance.
+- Use supportive language.
+- If the situation seems serious, recommend contacting a trainer.
+- Do not mention any specific organization or official protocol.
 
-    if st.session_state.ai_response is None:
+User inputs:
+Behavior: {behavior}
+Context: {context}
+Frequency: {frequency}
 
-        if st.button("Generate expanded guidance"):
+Structured result:
+Likely issue: {best.get('likely_issue', 'N/A')}
+Concern level: {risk_label}
+Why it matters: {best.get('why_it_matters', 'N/A')}
+Immediate next step: {best.get('immediate_action', 'N/A')}
+Longer-term support: {best.get('long_term_support', 'N/A')}
+When to get help: {best.get('escalate_when', 'N/A')}
 
-            client = OpenAI(api_key=api_key)
+Write the answer in this exact format:
 
-            try:
-                with st.spinner("Generating detailed guidance..."):
+### What may be going on
+2-3 sentences.
 
-                    response = client.responses.create(
-                        model="gpt-4.1-mini",
-                        input=prompt,
-                    )
+### What to try next time
+Give 4 numbered steps.
+
+### What not to do
+Give 2 bullets.
+
+### What to watch
+Give 3 bullets.
+
+### Helpful resource to add later
+Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
+"""
+
+    if not api_key:
+        st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
+
+    else:
+        if "ai_response" not in st.session_state:
+            st.session_state.ai_response = None
+
+        if st.session_state.ai_response is None:
+            if st.button("Generate expanded guidance"):
+                client = OpenAI(api_key=api_key)
+
+                try:
+                    with st.spinner("Generating detailed guidance..."):
+                        response = client.responses.create(
+                            model="gpt-4.1-mini",
+                            input=prompt,
+                        )
 
                     st.session_state.ai_response = response.output_text
+                    st.rerun()
 
-            except Exception as e:
-                st.error(f"Detailed guidance failed: {e}")
+                except Exception as e:
+                    st.error(f"Detailed guidance failed: {e}")
 
-    if st.session_state.ai_response is not None:
-        st.markdown(st.session_state.ai_response)
-        
-    
-    prompt = f"""
-    You are helping a service-dog puppy raiser interpret a behavior concern.
-    
-    Important constraints:
-    - Do not diagnose the dog.
-    - Do not claim certainty.
-    - Do not replace a trainer.
-    - Stay grounded in the structured result below.
-    - Give concrete, practical, step-by-step guidance.
-    - Use supportive language.
-    - If the situation seems serious, recommend contacting a trainer.
-    - Do not mention any specific organization or official protocol.
-    
-    User inputs:
-    Behavior: {behavior}
-    Context: {context}
-    Frequency: {frequency}
-    
-    Structured result:
-    Likely issue: {best.get('likely_issue', 'N/A')}
-    Concern level: {risk_label}
-    Why it matters: {best.get('why_it_matters', 'N/A')}
-    Immediate next step: {best.get('immediate_action', 'N/A')}
-    Longer-term support: {best.get('long_term_support', 'N/A')}
-    When to get help: {best.get('escalate_when', 'N/A')}
-    
-    Write the answer in this exact format:
-    
-    ### What may be going on
-    2-3 sentences.
-    
-    ### What to try next time
-    Give 4 numbered steps.
-    
-    ### What not to do
-    Give 2 bullets.
-    
-    ### What to watch
-    Give 3 bullets.
-    
-    ### Helpful resource to add later
-    Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
-    """
-   
-
-
+        if st.session_state.ai_response is not None:
+            st.markdown(st.session_state.ai_response)
+            
 # -----------------------------
 # Feedback
 # -----------------------------
