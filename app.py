@@ -401,60 +401,6 @@ with st.container(border=True):
 
 
 
-# -----------------------------
-# Feedback
-# -----------------------------
-
-
-with st.container(border=True):
-
-    st.subheader("📝 Feedback for user testing")
-    
-    useful = st.selectbox(
-        "Was this output useful?",
-        ["select one", "yes", "somewhat", "no"],
-    )
-    
-    trust = st.selectbox(
-        "Would you trust this as a raiser support tool?",
-        ["select one", "yes", "maybe", "no"],
-    )
-    
-    feedback = st.text_area(
-        "What felt missing, unclear, or too generic?",
-        placeholder="Example: I want more specific steps for barking during puppy class...",
-    )
-    
-    if st.button("Save feedback") and tester_id:
-        if useful == "select one" or trust == "select one":
-            st.warning("Please answer the usefulness and trust questions before saving feedback.")
-        else:
-            feedback_entry = {
-                "timestamp": pd.Timestamp.now(),
-                "tester_id": tester_id,
-                "behavior": behavior,
-                "context": context,
-                "frequency": frequency,
-                "likely_issue": best.get("likely_issue", "N/A"),
-                "concern_level": risk_label,
-                "concern_score": risk_score,
-                "feedback_useful": useful,
-                "feedback_trust": trust,
-                "feedback_text": feedback,
-            }
-    
-            try:
-                feedback_df = pd.read_csv(FEEDBACK_FILE)
-            except FileNotFoundError:
-                feedback_df = pd.DataFrame()
-    
-            feedback_df = pd.concat([feedback_df, pd.DataFrame([feedback_entry])], ignore_index=True)
-            feedback_df.to_csv(FEEDBACK_FILE, index=False)
-    
-            st.success("Feedback saved. Use this to guide the next iteration.")
-    
-            st.caption("Thank you — this feedback helps improve the system.")
-    
 
 
 # -----------------------------
@@ -533,7 +479,63 @@ with st.container(border=True):
     
             except Exception as e:
                 st.error(f"Detailed guidance failed: {e}")
-                
+
+
+# -----------------------------
+# Feedback
+# -----------------------------
+
+
+with st.container(border=True):
+
+    st.subheader("📝 Feedback for user testing")
+    
+    useful = st.selectbox(
+        "Was this output useful?",
+        ["select one", "yes", "somewhat", "no"],
+    )
+    
+    trust = st.selectbox(
+        "Would you trust this as a raiser support tool?",
+        ["select one", "yes", "maybe", "no"],
+    )
+    
+    feedback = st.text_area(
+        "What felt missing, unclear, or too generic?",
+        placeholder="Example: I want more specific steps for barking during puppy class...",
+    )
+    
+    if st.button("Save feedback") and tester_id:
+        if useful == "select one" or trust == "select one":
+            st.warning("Please answer the usefulness and trust questions before saving feedback.")
+        else:
+            feedback_entry = {
+                "timestamp": pd.Timestamp.now(),
+                "tester_id": tester_id,
+                "behavior": behavior,
+                "context": context,
+                "frequency": frequency,
+                "likely_issue": best.get("likely_issue", "N/A"),
+                "concern_level": risk_label,
+                "concern_score": risk_score,
+                "feedback_useful": useful,
+                "feedback_trust": trust,
+                "feedback_text": feedback,
+            }
+    
+            try:
+                feedback_df = pd.read_csv(FEEDBACK_FILE)
+            except FileNotFoundError:
+                feedback_df = pd.DataFrame()
+    
+            feedback_df = pd.concat([feedback_df, pd.DataFrame([feedback_entry])], ignore_index=True)
+            feedback_df.to_csv(FEEDBACK_FILE, index=False)
+    
+            st.success("Feedback saved. Use this to guide the next iteration.")
+    
+            st.caption("Thank you — this feedback helps improve the system.")
+
+
 
 with st.expander("🧠 Internal analytics dashboard (experimental)"):
     
