@@ -272,11 +272,15 @@ else:
 
 st.write("**Helpful resource to add later:**")
 if behavior == "barking":
-    st.write("A short video showing how to increase distance, reward calm check-ins, and re-enter the environment gradually would be useful here.")
+    st.write("A future version of this prototype could include approved video demonstrations showing how to increase distance, reward calm check-ins, and re-enter the environment gradually would be useful here.")
 elif behavior == "fear and anxiety":
-    st.write("A short video showing gradual exposure/desensitization would be useful here.")
+    st.write("A future version of this prototype could include approved video demonstrations showing gradual exposure/desensitization would be useful here.")
 else:
-    st.write("A short demo video showing the recommended training steps would be useful here.")
+    st.write("A future version of this prototype could include approved video demonstrations or training resources matched to specific behavior situations.")
+)
+# -----------------------------
+# Resource matching
+# -----------------------------
 
 # -----------------------------
 # Resource matching
