@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 
 st.set_page_config(page_title="GuideAI V2", page_icon="🐕")
 
@@ -289,14 +289,12 @@ st.caption(
     "AI-generated guidance may be incomplete or incorrect and should not replace trainer guidance."
 )
 
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    st.info("AI Coach is not enabled yet because OPENAI_API_KEY is not set.")
+    st.info("AI Coach is not enabled yet because GEMINI_API_KEY is not set.")
 else:
     if st.button("Generate more detailed guidance"):
-        client = OpenAI(api_key=api_key)
-
         prompt = f"""
 You are helping a service-dog puppy raiser interpret a behavior concern.
 
@@ -342,23 +340,15 @@ Describe what kind of short demo video or training resource would help for this 
 
         try:
             with st.spinner("Generating detailed guidance..."):
-                response = client.responses.create(
-                    model="gpt-4.1-mini",
-                    input=prompt,
-                )
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                response = model.generate_content(prompt)
 
-            st.markdown(response.output_text)
+            st.markdown(response.text)
 
         except Exception as e:
             st.error(f"AI Coach failed: {e}")
             
-with st.expander("Why this result was selected"):
-    st.write(f"- Selected behavior: `{behavior}`")
-    st.write(f"- Selected frequency: `{frequency}`")
-    st.write(f"- User context: `{context or 'none provided'}`")
-    st.write("- Concern score combines base behavior weight, persistence, behavior-group effects, and context relevance.")
-    st.write("- The recommendation row is chosen from the CSV using behavior, context overlap, and frequency fit.")
-
 # -----------------------------
 # Log behavior
 # -----------------------------
