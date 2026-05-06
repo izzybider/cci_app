@@ -232,14 +232,15 @@ with st.container(border=True):
     risk_label = score_to_label(risk_score)
     
     st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
+    
     if risk_label == "low":
-        st.success("Concern level: low")
+        st.success(f"Concern level: {risk_label}")
     
     elif risk_label == "medium":
-        st.warning("Concern level: medium")
+        st.warning(f"Concern level: {risk_label}")
     
     else:
-        st.error("Concern level: high")
+        st.error(f"Concern level: {risk_label}")
     
     st.caption(
         "This concern level reflects structured behavior rules informed by prior puppy-report analysis and puppy-raiser experience. "
@@ -321,83 +322,6 @@ with st.container(border=True):
 # else:
 #     st.write("st.write("A future version of this prototype could include trainer-approved video demonstrations for scenarios like this to provide more visual guidance and reinforcement.")
     
-# -----------------------------
-# AI Coach
-# -----------------------------
-
-
-with st.container(border=True):
-
-    st.subheader("🧠 Detailed coaching suggestions")
-    
-    st.caption(
-        "Experimental AI-generated coaching expansion. May be incomplete and should not replace trainer guidance."
-    )
-    
-    api_key = st.secrets.get("OPENAI_API_KEY")
-    
-    if not api_key:
-        st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
-    else:
-        if st.button("Generate expanded coaching suggestions"):
-            client = OpenAI(api_key=api_key)
-    
-            prompt = f"""
-    You are helping a service-dog puppy raiser interpret a behavior concern.
-    
-    Important constraints:
-    - Do not diagnose the dog.
-    - Do not claim certainty.
-    - Do not replace a trainer.
-    - Stay grounded in the structured result below.
-    - Give concrete, practical, step-by-step guidance.
-    - Use supportive language.
-    - If the situation seems serious, recommend contacting a trainer.
-    - Do not mention any specific organization or official protocol.
-    
-    User inputs:
-    Behavior: {behavior}
-    Context: {context}
-    Frequency: {frequency}
-    
-    Structured result:
-    Likely issue: {best.get('likely_issue', 'N/A')}
-    Concern level: {risk_label}
-    Why it matters: {best.get('why_it_matters', 'N/A')}
-    Immediate next step: {best.get('immediate_action', 'N/A')}
-    Longer-term support: {best.get('long_term_support', 'N/A')}
-    When to get help: {best.get('escalate_when', 'N/A')}
-    
-    Write the answer in this exact format:
-    
-    ### What may be going on
-    2-3 sentences.
-    
-    ### What to try next time
-    Give 4 numbered steps.
-    
-    ### What not to do
-    Give 2 bullets.
-    
-    ### What to watch
-    Give 3 bullets.
-    
-    ### Helpful resource to add later
-    Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
-    """
-    
-            try:
-                with st.spinner("Generating detailed guidance..."):
-                    response = client.responses.create(
-                        model="gpt-4.1-mini",
-                        input=prompt,
-                    )
-    
-                st.markdown(response.output_text)
-    
-            except Exception as e:
-                st.error(f"Detailed guidance failed: {e}")
-                
 # -----------------------------
 # Log behavior
 # -----------------------------
@@ -531,7 +455,85 @@ with st.container(border=True):
     
             st.caption("Thank you — this feedback helps improve the system.")
     
+
+
+# -----------------------------
+# AI Coach
+# -----------------------------
+
+
+with st.container(border=True):
+
+    st.subheader("🧠 Expanded coaching suggestions")
     
+    st.caption(
+        "Experimental AI-generated coaching expansion. May be incomplete and should not replace trainer guidance."
+    )
+    
+    api_key = st.secrets.get("OPENAI_API_KEY")
+    
+    if not api_key:
+        st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
+    else:
+        if st.button("Generate expanded guidance"):
+            client = OpenAI(api_key=api_key)
+    
+            prompt = f"""
+    You are helping a service-dog puppy raiser interpret a behavior concern.
+    
+    Important constraints:
+    - Do not diagnose the dog.
+    - Do not claim certainty.
+    - Do not replace a trainer.
+    - Stay grounded in the structured result below.
+    - Give concrete, practical, step-by-step guidance.
+    - Use supportive language.
+    - If the situation seems serious, recommend contacting a trainer.
+    - Do not mention any specific organization or official protocol.
+    
+    User inputs:
+    Behavior: {behavior}
+    Context: {context}
+    Frequency: {frequency}
+    
+    Structured result:
+    Likely issue: {best.get('likely_issue', 'N/A')}
+    Concern level: {risk_label}
+    Why it matters: {best.get('why_it_matters', 'N/A')}
+    Immediate next step: {best.get('immediate_action', 'N/A')}
+    Longer-term support: {best.get('long_term_support', 'N/A')}
+    When to get help: {best.get('escalate_when', 'N/A')}
+    
+    Write the answer in this exact format:
+    
+    ### What may be going on
+    2-3 sentences.
+    
+    ### What to try next time
+    Give 4 numbered steps.
+    
+    ### What not to do
+    Give 2 bullets.
+    
+    ### What to watch
+    Give 3 bullets.
+    
+    ### Helpful resource to add later
+    Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
+    """
+    
+            try:
+                with st.spinner("Generating detailed guidance..."):
+                    response = client.responses.create(
+                        model="gpt-4.1-mini",
+                        input=prompt,
+                    )
+    
+                st.markdown(response.output_text)
+    
+            except Exception as e:
+                st.error(f"Detailed guidance failed: {e}")
+                
 
 with st.expander("🧠 Internal analytics dashboard (experimental)"):
     
