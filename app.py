@@ -533,7 +533,7 @@ with st.container(border=True):
     
     
 
-with st.expander("🧠 Expanded coaching suggestions (experimental)"):
+with st.expander("🧠 Internal analytics dashboard (experimental)"):
     
     st.subheader("🔒 Internal analytics dashboard")
     st.caption("Hidden in public pilot version")
