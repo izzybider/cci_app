@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import streamlit as st
-import google.generativeai as genai
+from openai import OpenAI
 
 st.set_page_config(page_title="GuideAI V2", page_icon="🐕")
 
@@ -279,22 +279,58 @@ else:
     st.write("A short demo video showing the recommended training steps would be useful here.")
 
 # -----------------------------
+# Resource matching
+# -----------------------------
+
+RESOURCE_MATCHES = {
+    "barking": {
+        "title": "Suggested resource type: calm check-ins around distractions",
+        "description": "A short demo showing how to create distance, reward quiet check-ins, and re-enter a distracting environment gradually would be useful."
+    },
+    "fear and anxiety": {
+        "title": "Suggested resource type: gradual exposure/desensitization",
+        "description": "A short demo showing how to let the dog observe from a safe distance and reward calm behavior without forcing interaction would be useful."
+    },
+    "poor eye contact": {
+        "title": "Suggested resource type: engagement and focus exercises",
+        "description": "A short demo showing name response, check-ins, and short focus games before adding distractions would be useful."
+    },
+    "poor responsivity": {
+        "title": "Suggested resource type: cue responsiveness practice",
+        "description": "A short demo showing how to simplify cues, reduce distractions, and reward quick responses would be useful."
+    },
+    "impulsivity": {
+        "title": "Suggested resource type: calm greetings and impulse control",
+        "description": "A short demo showing how to wait for calm behavior before giving attention or rewards would be useful."
+    },
+}
+
+resource = RESOURCE_MATCHES.get(behavior)
+
+if resource:
+    st.write("**Suggested resource to add later:**")
+    st.write(f"**{resource['title']}**")
+    st.write(resource["description"])
+    
+# -----------------------------
 # AI Coach
 # -----------------------------
 
-st.subheader("AI Coach")
+st.subheader("Detailed coaching suggestions")
 
 st.caption(
-    "Optional: generate more detailed guidance based on the structured result above. "
-    "AI-generated guidance may be incomplete or incorrect and should not replace trainer guidance."
+    "Optional experimental feature: expands the structured result into more detailed guidance. "
+    "This may be incomplete or incorrect and should not replace trainer guidance."
 )
 
-api_key = os.getenv("GEMINI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
 
 if not api_key:
-    st.info("AI Coach is not enabled yet because GEMINI_API_KEY is not set.")
+    st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
 else:
-    if st.button("Generate more detailed guidance"):
+    if st.button("Generate detailed guidance"):
+        client = OpenAI(api_key=api_key)
+
         prompt = f"""
 You are helping a service-dog puppy raiser interpret a behavior concern.
 
@@ -306,6 +342,7 @@ Important constraints:
 - Give concrete, practical, step-by-step guidance.
 - Use supportive language.
 - If the situation seems serious, recommend contacting a trainer.
+- Do not mention any specific organization or official protocol.
 
 User inputs:
 Behavior: {behavior}
@@ -340,14 +377,15 @@ Describe what kind of short demo video or training resource would help for this 
 
         try:
             with st.spinner("Generating detailed guidance..."):
-                genai.configure(api_key=api_key)
-                model = genai.GenerativeModel("gemini-2.0-flash")
-                response = model.generate_content(prompt)
+                response = client.responses.create(
+                    model="gpt-4.1-mini",
+                    input=prompt,
+                )
 
-            st.markdown(response.text)
+            st.markdown(response.output_text)
 
         except Exception as e:
-            st.error(f"AI Coach failed: {e}")
+            st.error(f"Detailed guidance failed: {e}")
             
 # -----------------------------
 # Log behavior
