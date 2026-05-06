@@ -237,8 +237,9 @@ st.write(f"**Why it matters:** {best.get('why_it_matters', 'N/A')}")
 st.write(f"**Immediate next step:** {best.get('immediate_action', 'N/A')}")
 st.write(f"**Longer-term support:** {best.get('long_term_support', 'N/A')}")
 #st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
-st.write("**When to get extra help:**")
-st.write(best.get("escalate_when", "N/A"))
+st.markdown(
+    f"**When to get extra help:** {best.get('escalate_when', 'N/A')}"
+)
 #st.write(f"**Confidence note:** {confidence_text(behavior, frequency, context)}")
 #st.write(f"**Internal concern score:** {risk_score:.2f}")
 st.caption("Based on behavior type, how often it occurs, and the context provided.")
