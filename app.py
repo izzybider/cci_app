@@ -212,37 +212,40 @@ if not tester_id:
 # Results
 # -----------------------------
 
-st.subheader("Data-informed result")
+with st.container(border=True):
 
-matches = df[df["behavior"] == behavior].copy()
-
-if matches.empty:
-    st.error("No rows found for that behavior in guideai_data.csv.")
-    st.stop()
-
-best = pick_best_row(matches, context, frequency)
-
-risk_score = compute_risk_score(behavior, frequency, context)
-risk_label = score_to_label(risk_score)
-
-st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
-st.write(f"**Concern level:** {risk_label}")
-
-st.caption(
-    "This concern level reflects structured behavior rules informed by prior puppy-report analysis and puppy-raiser experience. "
-    "It is not an official training, causal, or clinical determination."
-)
-
-st.write(f"**Why it matters:** {best.get('why_it_matters', 'N/A')}")
-st.write(f"**Immediate next step:** {best.get('immediate_action', 'N/A')}")
-st.write(f"**Longer-term support:** {best.get('long_term_support', 'N/A')}")
-#st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
-st.markdown(
-    f"**When to get extra help:** {best.get('escalate_when', 'N/A')}"
-)
+    st.subheader("📊 Data-informed result")
+    
+    matches = df[df["behavior"] == behavior].copy()
+    
+    if matches.empty:
+        st.error("No rows found for that behavior in guideai_data.csv.")
+        st.stop()
+    
+    best = pick_best_row(matches, context, frequency)
+    
+    risk_score = compute_risk_score(behavior, frequency, context)
+    risk_label = score_to_label(risk_score)
+    
+    st.write(f"**Likely issue:** {best.get('likely_issue', 'N/A')}")
+    st.write(f"**Concern level:** {risk_label}")
+    
+    st.caption(
+        "This concern level reflects structured behavior rules informed by prior puppy-report analysis and puppy-raiser experience. "
+        "It is not an official training, causal, or clinical determination."
+    )
+    
+    st.write(f"**Why it matters:** {best.get('why_it_matters', 'N/A')}")
+    st.write(f"**Immediate next step:** {best.get('immediate_action', 'N/A')}")
+    st.write(f"**Longer-term support:** {best.get('long_term_support', 'N/A')}")
+    #st.write(f"**Escalate when:** {best.get('escalate_when', 'N/A')}")
+    st.markdown(
+        f"**When to get extra help:** {best.get('escalate_when', 'N/A')}"
+    )
+    
 #st.write(f"**Confidence note:** {confidence_text(behavior, frequency, context)}")
 #st.write(f"**Internal concern score:** {risk_score:.2f}")
-st.caption("Based on behavior type, how often it occurs, and the context provided.")
+    st.caption("Based on behavior type, how often it occurs, and the context provided.")
 
 # # -----------------------------
 # # Suggested training resource
@@ -311,179 +314,94 @@ st.caption("Based on behavior type, how often it occurs, and the context provide
 # AI Coach
 # -----------------------------
 
-st.subheader("Detailed coaching suggestions")
-st.caption(
-    "Uses a language model to expand the structured recommendation into more contextual coaching suggestions. "
-    "This may be incomplete or incorrect and should not replace trainer guidance."
-)
+st.divider()
 
-api_key = st.secrets.get("OPENAI_API_KEY")
+with st.container(border=True):
 
-if not api_key:
-    st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
-else:
-    if st.button("Generate expanded coaching suggestions"):
-        client = OpenAI(api_key=api_key)
-
-        prompt = f"""
-You are helping a service-dog puppy raiser interpret a behavior concern.
-
-Important constraints:
-- Do not diagnose the dog.
-- Do not claim certainty.
-- Do not replace a trainer.
-- Stay grounded in the structured result below.
-- Give concrete, practical, step-by-step guidance.
-- Use supportive language.
-- If the situation seems serious, recommend contacting a trainer.
-- Do not mention any specific organization or official protocol.
-
-User inputs:
-Behavior: {behavior}
-Context: {context}
-Frequency: {frequency}
-
-Structured result:
-Likely issue: {best.get('likely_issue', 'N/A')}
-Concern level: {risk_label}
-Why it matters: {best.get('why_it_matters', 'N/A')}
-Immediate next step: {best.get('immediate_action', 'N/A')}
-Longer-term support: {best.get('long_term_support', 'N/A')}
-When to get help: {best.get('escalate_when', 'N/A')}
-
-Write the answer in this exact format:
-
-### What may be going on
-2-3 sentences.
-
-### What to try next time
-Give 4 numbered steps.
-
-### What not to do
-Give 2 bullets.
-
-### What to watch
-Give 3 bullets.
-
-### Helpful resource to add later
-Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
-"""
-
-        try:
-            with st.spinner("Generating detailed guidance..."):
-                response = client.responses.create(
-                    model="gpt-4.1-mini",
-                    input=prompt,
-                )
-
-            st.markdown(response.output_text)
-
-        except Exception as e:
-            st.error(f"Detailed guidance failed: {e}")
-            
+    st.subheader("🧠 Detailed coaching suggestions")
+    
+    st.caption(
+        "Uses a language model to expand the structured recommendation into more contextual coaching suggestions. "
+        "This may be incomplete or incorrect and should not replace trainer guidance."
+    )
+    
+    api_key = st.secrets.get("OPENAI_API_KEY")
+    
+    if not api_key:
+        st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
+    else:
+        if st.button("Generate expanded coaching suggestions"):
+            client = OpenAI(api_key=api_key)
+    
+            prompt = f"""
+    You are helping a service-dog puppy raiser interpret a behavior concern.
+    
+    Important constraints:
+    - Do not diagnose the dog.
+    - Do not claim certainty.
+    - Do not replace a trainer.
+    - Stay grounded in the structured result below.
+    - Give concrete, practical, step-by-step guidance.
+    - Use supportive language.
+    - If the situation seems serious, recommend contacting a trainer.
+    - Do not mention any specific organization or official protocol.
+    
+    User inputs:
+    Behavior: {behavior}
+    Context: {context}
+    Frequency: {frequency}
+    
+    Structured result:
+    Likely issue: {best.get('likely_issue', 'N/A')}
+    Concern level: {risk_label}
+    Why it matters: {best.get('why_it_matters', 'N/A')}
+    Immediate next step: {best.get('immediate_action', 'N/A')}
+    Longer-term support: {best.get('long_term_support', 'N/A')}
+    When to get help: {best.get('escalate_when', 'N/A')}
+    
+    Write the answer in this exact format:
+    
+    ### What may be going on
+    2-3 sentences.
+    
+    ### What to try next time
+    Give 4 numbered steps.
+    
+    ### What not to do
+    Give 2 bullets.
+    
+    ### What to watch
+    Give 3 bullets.
+    
+    ### Helpful resource to add later
+    Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
+    """
+    
+            try:
+                with st.spinner("Generating detailed guidance..."):
+                    response = client.responses.create(
+                        model="gpt-4.1-mini",
+                        input=prompt,
+                    )
+    
+                st.markdown(response.output_text)
+    
+            except Exception as e:
+                st.error(f"Detailed guidance failed: {e}")
+                
 # -----------------------------
 # Log behavior
 # -----------------------------
 
-st.subheader("Track this behavior over time")
+st.divider()
 
-if st.button("Log this observation") and tester_id:
-    log_entry = {
-         "timestamp": pd.Timestamp.now(),
-        "tester_id": tester_id,
-        "behavior": behavior,
-        "context": context,
-        "frequency": frequency,
-        "likely_issue": best.get("likely_issue", "N/A"),
-        "concern_level": risk_label,
-        "concern_score": risk_score,
-    }
+with st.container(border=True):
 
-    try:
-        log_df = pd.read_csv(LOG_FILE)
-    except FileNotFoundError:
-        log_df = pd.DataFrame()
+    st.subheader("📈 Track this behavior over time")
 
-    log_df = pd.concat([log_df, pd.DataFrame([log_entry])], ignore_index=True)
-    log_df.to_csv(LOG_FILE, index=False)
-
-    st.success("Observation saved. You are now tracking behavior over time.")
-
-    st.caption("You can log multiple observations to see trends over time.")
-
-if st.checkbox("Show my behavior trends over time"):
-
-    # 🚨 require user identity FIRST
-    if not tester_id or not tester_id.strip():
-        st.warning("Enter your name or dog name to view your behavior trends.")
-        st.stop()
-
-    try:
-        log_df = pd.read_csv(LOG_FILE)
-
-        # ✅ filter to THIS user only
-        log_df = log_df[log_df["tester_id"] == tester_id]
-
-        if log_df.empty:
-            st.info("No logged observations yet for this tester/dog.")
-        else:
-            # ensure proper time ordering
-            log_df["timestamp"] = pd.to_datetime(log_df["timestamp"])
-            log_df = log_df.sort_values("timestamp")
-
-            # 📈 trend chart
-            st.line_chart(
-                log_df.set_index("timestamp")["concern_score"]
-            )
-
-            st.caption(f"{len(log_df)} observations logged")
-
-            # 🧠 simple trend insight (nice PM touch)
-            if len(log_df) >= 3:
-                recent = log_df["concern_score"].tail(3).tolist()
-
-                if recent[-1] > recent[0]:
-                    st.warning("Recent observations suggest concern may be trending upward.")
-                elif recent[-1] < recent[0]:
-                    st.success("Recent observations suggest concern may be trending downward.")
-                else:
-                    st.info("Recent concern level appears stable.")
-
-    except FileNotFoundError:
-        st.info("No logged observations yet.")
-
-
-
-
-
-
-# -----------------------------
-# Feedback
-# -----------------------------
-
-st.subheader("Feedback for user testing")
-
-useful = st.selectbox(
-    "Was this output useful?",
-    ["select one", "yes", "somewhat", "no"],
-)
-
-trust = st.selectbox(
-    "Would you trust this as a raiser support tool?",
-    ["select one", "yes", "maybe", "no"],
-)
-
-feedback = st.text_area(
-    "What felt missing, unclear, or too generic?",
-    placeholder="Example: I want more specific steps for barking during puppy class...",
-)
-
-if st.button("Save feedback") and tester_id:
-    if useful == "select one" or trust == "select one":
-        st.warning("Please answer the usefulness and trust questions before saving feedback.")
-    else:
-        feedback_entry = {
-            "timestamp": pd.Timestamp.now(),
+    if st.button("Log this observation") and tester_id:
+        log_entry = {
+             "timestamp": pd.Timestamp.now(),
             "tester_id": tester_id,
             "behavior": behavior,
             "context": context,
@@ -491,45 +409,148 @@ if st.button("Save feedback") and tester_id:
             "likely_issue": best.get("likely_issue", "N/A"),
             "concern_level": risk_label,
             "concern_score": risk_score,
-            "feedback_useful": useful,
-            "feedback_trust": trust,
-            "feedback_text": feedback,
         }
+    
+        try:
+            log_df = pd.read_csv(LOG_FILE)
+        except FileNotFoundError:
+            log_df = pd.DataFrame()
+    
+        log_df = pd.concat([log_df, pd.DataFrame([log_entry])], ignore_index=True)
+        log_df.to_csv(LOG_FILE, index=False)
+    
+        st.success("Observation saved. You are now tracking behavior over time.")
+    
+        st.caption("You can log multiple observations to see trends over time.")
+    
+    if st.checkbox("Show my behavior trends over time"):
+    
+        # 🚨 require user identity FIRST
+        if not tester_id or not tester_id.strip():
+            st.warning("Enter your name or dog name to view your behavior trends.")
+            st.stop()
+    
+        try:
+            log_df = pd.read_csv(LOG_FILE)
+    
+            # ✅ filter to THIS user only
+            log_df = log_df[log_df["tester_id"] == tester_id]
+    
+            if log_df.empty:
+                st.info("No logged observations yet for this tester/dog.")
+            else:
+                # ensure proper time ordering
+                log_df["timestamp"] = pd.to_datetime(log_df["timestamp"])
+                log_df = log_df.sort_values("timestamp")
+    
+                # 📈 trend chart
+                st.line_chart(
+                    log_df.set_index("timestamp")["concern_score"]
+                )
+    
+                st.caption(f"{len(log_df)} observations logged")
+    
+                # 🧠 simple trend insight (nice PM touch)
+                if len(log_df) >= 3:
+                    recent = log_df["concern_score"].tail(3).tolist()
+    
+                    if recent[-1] > recent[0]:
+                        st.warning("Recent observations suggest concern may be trending upward.")
+                    elif recent[-1] < recent[0]:
+                        st.success("Recent observations suggest concern may be trending downward.")
+                    else:
+                        st.info("Recent concern level appears stable.")
+    
+        except FileNotFoundError:
+            st.info("No logged observations yet.")
+    
+    
+    
 
+
+
+# -----------------------------
+# Feedback
+# -----------------------------
+
+st.divider()
+
+with st.container(border=True):
+
+    st.subheader("📝 Feedback for user testing")
+    
+    useful = st.selectbox(
+        "Was this output useful?",
+        ["select one", "yes", "somewhat", "no"],
+    )
+    
+    trust = st.selectbox(
+        "Would you trust this as a raiser support tool?",
+        ["select one", "yes", "maybe", "no"],
+    )
+    
+    feedback = st.text_area(
+        "What felt missing, unclear, or too generic?",
+        placeholder="Example: I want more specific steps for barking during puppy class...",
+    )
+    
+    if st.button("Save feedback") and tester_id:
+        if useful == "select one" or trust == "select one":
+            st.warning("Please answer the usefulness and trust questions before saving feedback.")
+        else:
+            feedback_entry = {
+                "timestamp": pd.Timestamp.now(),
+                "tester_id": tester_id,
+                "behavior": behavior,
+                "context": context,
+                "frequency": frequency,
+                "likely_issue": best.get("likely_issue", "N/A"),
+                "concern_level": risk_label,
+                "concern_score": risk_score,
+                "feedback_useful": useful,
+                "feedback_trust": trust,
+                "feedback_text": feedback,
+            }
+    
+            try:
+                feedback_df = pd.read_csv(FEEDBACK_FILE)
+            except FileNotFoundError:
+                feedback_df = pd.DataFrame()
+    
+            feedback_df = pd.concat([feedback_df, pd.DataFrame([feedback_entry])], ignore_index=True)
+            feedback_df.to_csv(FEEDBACK_FILE, index=False)
+    
+            st.success("Feedback saved. Use this to guide the next iteration.")
+    
+            st.caption("Thank you — this feedback helps improve the system.")
+    
+    
+st.divider()
+
+with st.container(border=True):
+
+    st.subheader("🔒 Internal analytics dashboard")
+    st.caption("Hidden in public pilot version")
+    
+    
+    admin_password = st.text_input("Enter admin password", type="password")
+    
+    if admin_password == "izzy123":
+        st.success("Access granted")
+    
+        st.write("### Saved feedback")
         try:
             feedback_df = pd.read_csv(FEEDBACK_FILE)
+            st.dataframe(feedback_df, use_container_width=True)
         except FileNotFoundError:
-            feedback_df = pd.DataFrame()
-
-        feedback_df = pd.concat([feedback_df, pd.DataFrame([feedback_entry])], ignore_index=True)
-        feedback_df.to_csv(FEEDBACK_FILE, index=False)
-
-        st.success("Feedback saved. Use this to guide the next iteration.")
-
-        st.caption("Thank you — this feedback helps improve the system.")
-
-
-st.subheader("Internal analytics dashboard hidden in pilot version.")
-
-
-admin_password = st.text_input("Enter admin password", type="password")
-
-if admin_password == "izzy123":
-    st.success("Access granted")
-
-    st.write("### Saved feedback")
-    try:
-        feedback_df = pd.read_csv(FEEDBACK_FILE)
-        st.dataframe(feedback_df, use_container_width=True)
-    except FileNotFoundError:
-        st.info("No feedback saved yet.")
-
-    st.write("### Behavior logs")
-    try:
-        log_df = pd.read_csv(LOG_FILE)
-        st.dataframe(log_df, use_container_width=True)
-    except FileNotFoundError:
-        st.info("No behavior logs saved yet.")
-
-elif admin_password:
-    st.error("Incorrect password")
+            st.info("No feedback saved yet.")
+    
+        st.write("### Behavior logs")
+        try:
+            log_df = pd.read_csv(LOG_FILE)
+            st.dataframe(log_df, use_container_width=True)
+        except FileNotFoundError:
+            st.info("No behavior logs saved yet.")
+    
+    elif admin_password:
+        st.error("Incorrect password")
