@@ -212,6 +212,9 @@ tester_id = st.text_input(
 if not tester_id:
     st.info("Enter your name or dog name to enable tracking and trends.")
 
+if not tester_id or not tester_id.strip():
+    st.stop()
+
 # -----------------------------
 # Results
 # -----------------------------
@@ -421,7 +424,16 @@ with st.container(border=True):
     if not api_key:
         st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
     else:
-        if st.button("Generate expanded guidance"):
+        if "ai_guidance_generated" not in st.session_state:
+            st.session_state.ai_guidance_generated = False
+        
+        if not st.session_state.ai_guidance_generated:
+            generate_ai = st.button("Generate expanded guidance")
+        else:
+            generate_ai = False
+        
+        if generate_ai:
+            st.session_state.ai_guidance_generated = True
             client = OpenAI(api_key=api_key)
     
             prompt = f"""
