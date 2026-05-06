@@ -277,7 +277,6 @@ elif behavior == "fear and anxiety":
     st.write("A future version of this prototype could include approved video demonstrations showing gradual exposure/desensitization would be useful here.")
 else:
     st.write("A future version of this prototype could include approved video demonstrations or training resources matched to specific behavior situations.")
-)
 # -----------------------------
 # Resource matching
 # -----------------------------
