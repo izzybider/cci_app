@@ -189,9 +189,11 @@ def pick_best_row(matches: pd.DataFrame, user_context: str, user_frequency: str)
 # UI inputs
 # -----------------------------
 
+behavior_options = ["select behavior"] + sorted(df["behavior"].dropna().unique())
+
 behavior = st.selectbox(
     "Observed behavior",
-    sorted(df["behavior"].dropna().unique()),
+    behavior_options,
 )
 
 context = st.text_input(
@@ -201,7 +203,7 @@ context = st.text_input(
 
 frequency = st.selectbox(
     "How often has this happened?",
-    ["once", "intermittent", "repeated"],
+    ["select frequency", "once", "intermittent", "repeated"],
 )
 
 tester_id = st.text_input(
@@ -213,6 +215,9 @@ if not tester_id:
     st.info("Enter your name or dog name to enable tracking and trends.")
 
 if not tester_id or not tester_id.strip():
+    st.stop()
+
+if behavior == "select behavior" or frequency == "select frequency":
     st.stop()
 
 # -----------------------------
@@ -421,20 +426,36 @@ with st.container(border=True):
     
     api_key = st.secrets.get("OPENAI_API_KEY")
     
-    if not api_key:
-        st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
-    else:
-        if "ai_guidance_generated" not in st.session_state:
-            st.session_state.ai_guidance_generated = False
-        
-        if not st.session_state.ai_guidance_generated:
-            generate_ai = st.button("Generate expanded guidance")
-        else:
-            generate_ai = False
-        
-        if generate_ai:
-            st.session_state.ai_guidance_generated = True
+if not api_key:
+    st.info("Detailed coaching suggestions are not enabled yet because OPENAI_API_KEY is not set.")
+
+else:
+
+    if "ai_response" not in st.session_state:
+        st.session_state.ai_response = None
+
+    if st.session_state.ai_response is None:
+
+        if st.button("Generate expanded guidance"):
+
             client = OpenAI(api_key=api_key)
+
+            try:
+                with st.spinner("Generating detailed guidance..."):
+
+                    response = client.responses.create(
+                        model="gpt-4.1-mini",
+                        input=prompt,
+                    )
+
+                    st.session_state.ai_response = response.output_text
+
+            except Exception as e:
+                st.error(f"Detailed guidance failed: {e}")
+
+    if st.session_state.ai_response is not None:
+        st.markdown(st.session_state.ai_response)
+        
     
             prompt = f"""
     You are helping a service-dog puppy raiser interpret a behavior concern.
@@ -479,18 +500,7 @@ with st.container(border=True):
     ### Helpful resource to add later
     Describe what kind of short demo video or training resource would help for this scenario. Do not link to any specific organization.
     """
-    
-            try:
-                with st.spinner("Generating detailed guidance..."):
-                    response = client.responses.create(
-                        model="gpt-4.1-mini",
-                        input=prompt,
-                    )
-    
-                st.markdown(response.output_text)
-    
-            except Exception as e:
-                st.error(f"Detailed guidance failed: {e}")
+   
 
 
 # -----------------------------
